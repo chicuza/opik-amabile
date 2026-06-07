@@ -1,0 +1,13 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "IMAGE",
+    "image": "ghcr.io/comet-ml/opik/opik-backend:latest"
+  },
+  "deploy": {
+    "healthcheckPath": "/is-alive/ping",
+    "healthcheckTimeout": 180,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5
+  }
+}

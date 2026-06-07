@@ -1,0 +1,11 @@
+{
+  "enabledMcpjsonServers": [
+    "filesystem",
+    "brave-search",
+    "memory",
+    "n8n-mcp",
+    "n8n-workflow-builder",
+    "github",
+    "sequential-thinking"
+  ]
+}

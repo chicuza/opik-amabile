@@ -1,0 +1,34 @@
+<clickhouse>
+    <macros>
+        <shard>2</shard>
+        <replica>clickhouse-r1</replica>
+        <cluster>cluster</cluster>
+    </macros>
+
+    <zookeeper>
+        <node>
+            <host>zookeeper.railway.internal</host>
+            <port>2181</port>
+        </node>
+    </zookeeper>
+
+    <zookeeper_path>/clickhouse</zookeeper_path>
+    <zookeeper_session_timeout_ms>30000</zookeeper_session_timeout_ms>
+
+    <distributed_ddl>
+        <path>/clickhouse/task_queue/ddl</path>
+    </distributed_ddl>
+
+    <!-- Single-node "cluster" so ON CLUSTER 'cluster' DDL statements succeed.
+         Points at localhost to avoid DNS resolution issues during boot. -->
+    <remote_servers>
+        <cluster>
+            <shard>
+                <replica>
+                    <host>127.0.0.1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </cluster>
+    </remote_servers>
+</clickhouse>

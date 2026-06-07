@@ -1,0 +1,10 @@
+.env
+.env.local
+.secrets.local
+scripts/.deploy.env
+*.secret
+tools/railway*.exe
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store

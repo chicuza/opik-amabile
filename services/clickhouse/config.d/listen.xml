@@ -1,0 +1,11 @@
+<clickhouse>
+  <listen_host>0.0.0.0</listen_host>
+  <listen_host>::</listen_host>
+  <listen_try>1</listen_try>
+  <!-- Keep interserver_http_port (9009) enabled — ReplicatedMergeTree falls into
+       readonly mode without an interserver listener, even on a single-node setup.
+       Override host to localhost so it doesn't conflict with external listeners. -->
+  <interserver_http_host>127.0.0.1</interserver_http_host>
+  <tcp_port_secure remove="remove"/>
+  <https_port remove="remove"/>
+</clickhouse>

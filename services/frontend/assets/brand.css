@@ -1,0 +1,25 @@
+/*
+ * AmabileAI brand overlay — minimal.
+ * Preserva 100% do CSS/layout/cores do upstream.
+ * Único papel: esconder as wordmarks visuais antigas (Opik/Comet logos)
+ * para evitar flash antes do brand-cleanup.js fazer a troca via DOM.
+ *
+ * Tudo o mais (paleta, tipografia, componentes) fica como está no upstream.
+ */
+
+/* Esconde imagens cujo alt ou src referencia o nome antigo —
+   brand-cleanup.js insere a logo AmabileAI logo em seguida. */
+img[alt*="opik" i],
+img[alt*="comet" i],
+img[src*="/opik" i],
+img[src*="comet" i] {
+  visibility: hidden;
+}
+
+/* Esconde SVGs inline rotulados com a marca antiga (sidebar/header logo). */
+svg[aria-label*="opik" i],
+svg[aria-label*="comet" i],
+svg[data-name*="opik" i],
+svg[id*="opik" i] {
+  visibility: hidden;
+}
