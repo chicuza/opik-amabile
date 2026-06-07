@@ -3,15 +3,15 @@ FROM ghcr.io/comet-ml/opik/opik-frontend:latest
 # Copy upstream blocks for backend and guardrails (loaded before default.conf)
 COPY --chown=nginx:nginx 00-backend.conf /etc/nginx/conf.d/00-backend.conf
 
-# Overlay nginx default.conf with Railway-internal upstream hostnames and
-# the AmabileAI brand overlay (sub_filter rules, custom favicon, brand assets).
-# The baked image's conf points at literal "backend:8080" via Docker's embedded resolver,
-# which doesn't exist on Railway. We swap in `*.railway.internal` upstreams.
-# Opik's /docker-entrypoint.d/99-patch-nginx.conf.sh runs envsubst on every
-# file in /etc/nginx/conf.d/, substituting ${NGINX_PORT}, OTEL_*, etc. and
-# writes the result back to the same path. It needs write permission for that.
-COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/default.conf
-RUN chmod 0664 /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/00-backend.conf
+# Copy default.conf as template
+COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/default.conf.template
+
+# Process envsubst during build to avoid runtime corruption
+# The Opik patch-nginx.conf.sh script will still run, but our file is already processed
+RUN envsubst '${NGINX_PORT} ${OPIK_BACKEND_BASE_URL} ${OPIK_GUARDRAILS_BACKEND_URL}' \
+    < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && \
+    rm /etc/nginx/conf.d/default.conf.template && \
+    chmod 0664 /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/00-backend.conf
 
 # AmabileAI brand assets served from /amabile/* and used by sub_filter-injected
 # <link>, <script>, and favicon overrides defined in default.conf.
