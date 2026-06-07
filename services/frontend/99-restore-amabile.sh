@@ -1,11 +1,11 @@
+#!/bin/sh
+# Restore our custom default.conf after Opik's patch script corrupts it
+# This script runs AFTER 99-patch-nginx.conf.sh
+
+cat > /etc/nginx/conf.d/default.conf << 'EOF'
 client_max_body_size 2G;
 client_header_buffer_size 16k;
 large_client_header_buffers 4 64k;
-
-# Docker embedded DNS for service name resolution (Railway internal network)
-# Based on official Opik nginx_default_local.conf
-resolver 127.0.0.11 valid=30s ipv6=off;
-resolver_timeout 2s;
 
 server {
     listen ${NGINX_PORT} default_server;
@@ -43,8 +43,7 @@ server {
 
     location @api {
         rewrite /api/(.*) /$1 break;
-        # Use upstream block defined in upstream-backend.conf
-        proxy_pass http://backend;
+        proxy_pass http://backend:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -63,8 +62,7 @@ server {
 
     location @guardrails {
         rewrite /guardrails/(.*) /$1 break;
-        # Use upstream block defined in upstream-guardrails.conf
-        proxy_pass http://guardrails;
+        proxy_pass http://guardrails:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -92,4 +90,11 @@ server {
         sub_filter '</body>' '<script src="/amabile/brand-cleanup.js?v=7" defer></script></body>';
         try_files $uri $uri/ /index.html;
     }
+
+    add_header X-Trace-ID $otel_trace_id;
 }
+EOF
+
+# Process envsubst on our custom config
+envsubst '${NGINX_PORT}' < /etc/nginx/conf.d/default.conf > /etc/nginx/conf.d/default.conf.tmp
+mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf
