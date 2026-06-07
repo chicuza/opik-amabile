@@ -1,5 +1,8 @@
 FROM ghcr.io/comet-ml/opik/opik-frontend:latest
 
+# Copy upstream blocks for backend and guardrails (loaded before default.conf)
+COPY --chown=nginx:nginx 00-backend.conf /etc/nginx/conf.d/00-backend.conf
+
 # Overlay nginx default.conf with Railway-internal upstream hostnames and
 # the AmabileAI brand overlay (sub_filter rules, custom favicon, brand assets).
 # The baked image's conf points at literal "backend:8080" via Docker's embedded resolver,
@@ -8,7 +11,7 @@ FROM ghcr.io/comet-ml/opik/opik-frontend:latest
 # file in /etc/nginx/conf.d/, substituting ${NGINX_PORT}, OTEL_*, etc. and
 # writes the result back to the same path. It needs write permission for that.
 COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/default.conf
-RUN chmod 0664 /etc/nginx/conf.d/default.conf
+RUN chmod 0664 /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/00-backend.conf
 
 # AmabileAI brand assets served from /amabile/* and used by sub_filter-injected
 # <link>, <script>, and favicon overrides defined in default.conf.
