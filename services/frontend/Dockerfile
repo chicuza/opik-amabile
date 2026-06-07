@@ -2,29 +2,26 @@ FROM ghcr.io/comet-ml/opik/opik-frontend:latest
 
 USER root
 
-# Install custom entrypoint that disables the patch script
-COPY amabile-entrypoint.sh /amabile-entrypoint.sh
-RUN chmod 0755 /amabile-entrypoint.sh
+# Debug what we have at every step
+RUN echo "=== STEP A: base image /etc/nginx/conf.d/ ===" && \
+    ls -la /etc/nginx/conf.d/ 2>&1
 
-# Also try to disable the patch script at build time (best effort)
-RUN chmod -R 0777 /docker-entrypoint.d/ 2>/dev/null; \
-    rm -f /docker-entrypoint.d/99-patch-nginx.conf.sh 2>/dev/null; \
-    echo '#!/bin/sh' > /docker-entrypoint.d/99-patch-nginx.conf.sh 2>/dev/null; \
-    echo 'exit 0' >> /docker-entrypoint.d/99-patch-nginx.conf.sh 2>/dev/null; \
-    chmod 0755 /docker-entrypoint.d/99-patch-nginx.conf.sh 2>/dev/null; \
-    echo "=== Build-time patch script content ===" && \
-    cat /docker-entrypoint.d/99-patch-nginx.conf.sh 2>&1 || echo "build-time install failed (will use entrypoint)"
-
-# Copy our custom default.conf with hardcoded URLs
+# Copy our default.conf FIRST
 COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/default.conf
-RUN chmod 0664 /etc/nginx/conf.d/default.conf && \
-    head -3 /etc/nginx/conf.d/default.conf
+RUN echo "=== STEP B: after COPY ===" && \
+    ls -la /etc/nginx/conf.d/ 2>&1 && \
+    echo "--- first 5 lines ---" && \
+    head -5 /etc/nginx/conf.d/default.conf 2>&1 && \
+    echo "--- file size ---" && \
+    wc -l /etc/nginx/conf.d/default.conf 2>&1
+
+# Verify COPY worked by reading specific lines
+RUN grep -c "listen 5173" /etc/nginx/conf.d/default.conf && \
+    echo "listen 5173 found OK" || \
+    echo "listen 5173 NOT FOUND - COPY FAILED"
 
 # Brand assets
 COPY --chown=nginx:nginx assets/ /usr/share/nginx/html/amabile/
 
 EXPOSE 5173
-
-# Use our custom entrypoint that disables the patch script
-ENTRYPOINT ["/amabile-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+USER nginx
