@@ -2,18 +2,16 @@ FROM ghcr.io/comet-ml/opik/opik-frontend:latest
 
 USER root
 
-# Test: create a UNIQUE marker file with a name that doesn't conflict
-RUN echo "BUILD_TEST_$(date +%s)" > /amabile-build-marker.txt && \
-    cat /amabile-build-marker.txt
-
-# Try to copy the default.conf
-COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/default.conf
-RUN echo "=== AFTER COPY: ===" && \
+# Test: copy our minimal default.conf (build context is services/frontend/)
+COPY default.conf /etc/nginx/conf.d/default.conf
+RUN chmod 0644 /etc/nginx/conf.d/default.conf && \
+    echo "=== Build: /etc/nginx/conf.d/ ===" && \
     ls -la /etc/nginx/conf.d/ && \
-    echo "=== content of default.conf ===" && \
-    cat /etc/nginx/conf.d/default.conf && \
-    echo "=== amabile-build-marker.txt ===" && \
-    cat /amabile-build-marker.txt
+    echo "=== Build: content of default.conf ===" && \
+    cat /etc/nginx/conf.d/default.conf
+
+# Brand assets
+COPY assets/ /usr/share/nginx/html/amabile/
 
 EXPOSE 5173
 USER nginx
