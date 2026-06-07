@@ -2,9 +2,9 @@ FROM ghcr.io/comet-ml/opik/opik-frontend:latest
 
 USER root
 
-# Copy our minimal test config as 00-amabile.conf
-COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/00-amabile.conf
-RUN chmod 0644 /etc/nginx/conf.d/00-amabile.conf
+# Copy our minimal test config as default.conf
+COPY --chown=nginx:nginx default.conf /etc/nginx/conf.d/default.conf
+RUN chmod 0644 /etc/nginx/conf.d/default.conf
 
 # Brand assets
 COPY --chown=nginx:nginx assets/ /usr/share/nginx/html/amabile/
